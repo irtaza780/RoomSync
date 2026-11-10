@@ -7,6 +7,7 @@ An interactive proof of concept for **Room Sync**, a roommate household app, sho
 - Stack: React 18, Vite 5, TypeScript (strict), Tailwind CSS v4, lucide-react icons, Vitest
 - Household: *Apartment 4B*, Montréal (Syed, Abin and Debbie)
 - Workflows: shared expenses and balances, plus weekly chore rotation and completion
+- Release 2 preview: gamification (points, streaks, leaderboard and a household-agreed non-cash reward, FR-13/FR-14)
 
 ---
 
@@ -30,7 +31,7 @@ The app works offline after `npm install`, because fonts and icons are bundled. 
 
 | Area | Purpose |
 |---|---|
-| **Phone mockup** (centre) | The Room Sync app as one roommate sees it: Home, Expenses, Chores and Activity tabs, with bottom sheets for adding expenses, settle-ups and chores. |
+| **Phone mockup** (centre) | The Room Sync app as one roommate sees it: Home, Expenses, Chores and Activity tabs in a floating tab bar that shrinks to the current tab while you scroll down and expands on scroll up or tap. The round **+** button beside it adds an expense (or a chore on the Chores tab). |
 | **Presenter panel** (left) | Demo-only controls kept outside the phone: active roommate, EN/FR, demo week, scenario loading, second phone, validation results, PoC information and reset. |
 | **Second phone** (optional) | Another roommate's view of the same shared React state, to show how perspectives differ. |
 | **Evidence window** | *Validation results* (computed pass/fail, copy as text, download JSON) and *About this PoC* (assumptions, data model, storage, risks, requirement mapping). |
@@ -53,8 +54,9 @@ On screens narrower than 640 px the app fills the screen with no bezel. The pres
 10. **Scenario F (rotation).** Click **Advance demo week** a few times. Each chore moves Syed → Abin → Debbie → Syed. Unfinished chores become *Overdue* with a reminder on Home, a badge on the Chores tab and an activity item. Earlier completions stay under *Earlier weeks*.
 11. **Bilingual (NFR-01).** Switch to **FR** in the app header. Labels, validation messages, statuses, dates and currency (`61,19 $`) change. The cent values do not change, and French decimal commas such as `12,50` are accepted.
 12. **Scenario G (persistence).** Refresh the browser. The expenses, balances, chore completions, week, language and active roommate are all still there.
-13. **Validation results.** In the presenter panel, *Open validation results* runs the checks, compares expected and actual values, and offers *Copy as text* or *Download JSON* for the report.
-14. **Reset.** *Reset demo…* → confirm. This clears the saved record and restores the default populated demo.
+13. **Gamification preview.** On Home, open *Household points*. Marking a chore done shows "+10 pts" and moves the leaderboard. As Syed, agree to Abin's suggested reward; it becomes active once all three agree. Try suggesting "$20 cash" to see it rejected.
+14. **Validation results.** In the presenter panel, *Open validation results* runs the checks, compares expected and actual values, and offers *Copy as text* or *Download JSON* for the report.
+15. **Reset.** *Reset demo…* → confirm. This clears the saved record and restores the default populated demo.
 
 ---
 
@@ -76,6 +78,7 @@ On screens narrower than 640 px the app fills the screen with no bezel. The pres
 | J | Input validation: empty, invalid, zero, negative, >2 decimals, negative share, over-allocation | FR-03 |
 | K | Repeated save with the same draft id creates one expense and one activity entry | FR-03 |
 | L | 400 random equal/custom expenses plus valid settle-ups (seed 20261109): zero-sum and integer balances after every step | NFR-05, FR-04, FR-05 |
+| M | Points (+10 on time, +3 late, +5 settle-up), streaks, leaderboard order, cash reward rejected, reward active only after all three agree, points not stored | FR-13, FR-14 (R2 preview) |
 
 `npm test` runs the same checks in Vitest, plus unit tests for parsing, formatting and the seeded demo totals.
 
@@ -105,7 +108,17 @@ A snapshot of one run is in `docs/validation-results.txt` and `docs/validation-r
 
 ---
 
-## 7. Data and storage
+## 7. Gamification (Release 2 preview)
+
+FR-13 and FR-14 are Release 2 items in the D3 plan (WP-6.1, WP-6.2). They are included here as a preview so the gamification angle can be shown in the walkthrough.
+
+- **Points are derived, never stored**, like balances: +10 for a chore completed in its own week (by the Sunday due date), +3 if completed late, +5 to the roommate who paid a settle-up.
+- **Streak:** consecutive weeks in which a roommate completed all their chores on time. An unfinished current week doesn't break it.
+- **Leaderboard:** points, then streak, then stable order; ties share a rank.
+- **Reward (never cash):** any roommate can suggest one, such as "Skip one dish week". It becomes active only when all three agree. Suggestions that look like money (`$`, cash, dollars, argent, e-transfer…) are rejected.
+- **Where to see it:** the ★ points / 🔥 streak pill at the top of Home and Chores (tap it for the full sheet), the *Household points* card further down Home, the Rewards sheet, the "+10 pts" hints on your chores, the toast when you mark one done, and reward events in Activity. In the populated demo Syed hasn't agreed to Abin's reward yet: agree as Syed, or open a second phone.
+
+## 8. Data and storage
 
 One versioned record is saved under **`room-sync-demo-v1`** after every change:
 
@@ -118,6 +131,7 @@ One versioned record is saved under **`room-sync-demo-v1`** after every change:
             chores[ {assigneeOrder, currentIndex, …} ],
             assignments[ {choreId, week, assigneeId, dueAt, status, completedAt, …} ],
             activity[ {seq, type, actorId, at, week, payload} ],
+            reward: { title, proposedBy, agreedBy[] } | null,
             currentWeek, seq } } }
 ```
 
@@ -126,7 +140,7 @@ One versioned record is saved under **`room-sync-demo-v1`** after every change:
 - If `localStorage` is unavailable (for example, blocked storage), the app still works and shows that changes will not survive a refresh.
 - Field names follow the D3 Firestore data model where practical (`totalCents`, `owedCents`, `amountCents`, `assigneeOrder`, `currentIndex`). Splits are stored inside each expense for simplicity.
 
-## 8. Project structure
+## 9. Project structure
 
 ```
 src/
@@ -135,6 +149,7 @@ src/
     money.ts           integer-cent parsing and CAD formatting
     expenses.ts        equal/custom splits, validation, balances, who-owes-whom, settle-up rules
     chores.ts          round-robin rotation, status, chore validation
+    rewards.ts         points ledger, streaks, leaderboard, non-cash reward rules (R2 preview)
     dates.ts           demo calendar and demo clock
   state/
     reducer.ts         pure household reducer + app reducer (ids/timestamps passed in)
@@ -144,7 +159,7 @@ src/
   i18n/                en.ts, fr.ts string tables + translator helpers
   phone/               PhoneFrame (mockup), PhoneApp (header, nav, sheets), shared rows
   screens/             Home, Expenses, Chores, Activity
-  sheets/              Add expense, Expense details, Settle-up, New chore, Profile
+  sheets/              Add expense, Expense details, Settle-up, New chore, Rewards, Profile
   presenter/           Presenter panel, Evidence window (validation + PoC info)
   validation/          deterministic checks + Vitest suite
   ui/primitives.tsx    Tailwind UI building blocks
@@ -153,7 +168,7 @@ src/
 
 ---
 
-## 9. Requirement mapping (demonstrated subset)
+## 10. Requirement mapping (demonstrated subset)
 
 This mapping shows which interactions give evidence for each requirement. **It does not claim the production requirement is complete.**
 
@@ -165,6 +180,8 @@ This mapping shows which interactions give evidence for each requirement. **It d
 | **FR-06** | Define chores and how often they happen | New-chore sheet: name, weekly recurrence, first assignee, four-week rotation preview, duplicate names rejected | F |
 | **FR-07** | Chores rotate automatically each week | *Advance demo week* runs the round-robin rule Syed → Abin → Debbie → Syed with an idempotency guard | F |
 | **FR-08** | Mark a chore done; reminders for due chores | Assignee-only *Mark done*; Upcoming / Due today / Overdue / Done / Done late; Home reminder card, tab badge and overdue activity items (in-app only) | F, G |
+| **FR-13** *(R2 preview)* | Points and streaks for on-time chores and prompt settle-ups | Derived points ledger, streaks, "+10 pts" hints and toasts, Home points card, Rewards sheet | M |
+| **FR-14** *(R2 preview)* | Leaderboard and household-agreed rewards (never cash) | Leaderboard with shared ranks; suggest and agree to a reward; cash-like rewards rejected | M |
 | **NFR-01** | French and English interface | EN/FR switch in the app header, profile and presenter panel; separate string tables; locale-aware currency and dates; preference persisted | G, I |
 | **NFR-05** | Whole-cent balances that always sum to zero | String-based cent parsing; integer arithmetic; invariant checked before any record is written and when loading saved data; household total shown in the UI | A–E, I, L |
 
@@ -172,7 +189,7 @@ This mapping shows which interactions give evidence for each requirement. **It d
 
 ---
 
-## 10. Assumptions and limitations
+## 11. Assumptions and limitations
 
 **Assumptions demonstrated**
 
@@ -206,6 +223,7 @@ This mapping shows which interactions give evidence for each requirement. **It d
 - The real weekly job must use America/Toronto local time across daylight-saving changes.
 - Editing and deleting records will need an audit trail.
 - The settle-up cap is a PoC simplification. Partial and arbitrary payments need product decisions.
+- Points reward timeliness, not effort: a quick chore and a deep clean score the same. Weighting and anti-gaming rules need household testing.
 - No user testing has been carried out. The French copy should be reviewed by a native Québécois speaker.
 
 This PoC contains **no performance measurements, user-testing results or claims of production readiness.**

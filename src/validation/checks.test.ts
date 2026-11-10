@@ -47,6 +47,7 @@ describe('seeded demos', () => {
     ]);
     expect(d.currentWeek).toBe(2);
     expect(d.settlements).toHaveLength(1);
+    expect(d.reward?.agreedBy).toEqual(['abin', 'debbie']);
   });
   it('clean scenario has zero balances', () => {
     const d = buildScenario('clean');

@@ -48,6 +48,20 @@ export const REQUIREMENT_MAP: { id: string; text: string; interaction: string; c
     evidence: 'Scenarios F, G',
   },
   {
+    id: 'FR-13 (R2 preview)',
+    text: 'Points and streaks for chores done on time and prompt settle-ups.',
+    interaction: 'Points derived from records: +10 chore done on time, +3 late, +5 to the payer of a settle-up. Weekly streak for all-on-time weeks. Shown on Home, in chore rows, the Rewards sheet and the activity feed.',
+    code: 'domain/rewards.ts · pointLedger, pointsByMember, streakOf',
+    evidence: 'Check M',
+  },
+  {
+    id: 'FR-14 (R2 preview)',
+    text: 'Household leaderboard and agreed rewards (never cash).',
+    interaction: 'Leaderboard with shared ranks; any roommate can suggest a reward, which becomes active once all three agree (try it with the second phone). Cash-like rewards are rejected.',
+    code: 'domain/rewards.ts · leaderboard, validateRewardTitle; sheets/RewardsSheet.tsx',
+    evidence: 'Check M',
+  },
+  {
     id: 'NFR-01',
     text: 'Interface available in French and English.',
     interaction: 'EN/FR switch in the app header, profile sheet and presenter panel; locale-aware CAD and date formatting; French decimal comma accepted in amounts; preference persisted.',
@@ -117,7 +131,10 @@ export function PocInfo({ onShowValidation }: { onShowValidation: () => void }) 
       </Section>
 
       <Section title="Requirement mapping (demonstrated subset)">
-        <p className="mb-2 text-[12.5px] text-muted">This shows which interactions provide evidence for each requirement. It does not claim the production requirement is complete.</p>
+        <p className="mb-2 text-[12.5px] text-muted">
+          This shows which interactions provide evidence for each requirement. It does not claim the production requirement is complete. FR-13 and FR-14 are Release 2
+          items in D3, included here as an early preview of the gamification angle.
+        </p>
         <div className="overflow-x-auto rounded-2xl ring-1 ring-line">
           <table className="w-full min-w-[640px] text-left text-[12.5px]">
             <thead className="bg-cream text-[11px] uppercase tracking-wide text-muted">
@@ -167,6 +184,8 @@ export function PocInfo({ onShowValidation }: { onShowValidation: () => void }) 
                 ['chores', 'id, title, frequency (weekly), assigneeOrder, currentIndex, createdWeek', state.data.chores.length],
                 ['assignments', 'id, choreId, week, assigneeId, dueAt, status, completedAt, completedBy', state.data.assignments.length],
                 ['activity', 'id, seq, type, actorId, at, week, payload', state.data.activity.length],
+                ['reward', 'id, title, proposedBy, proposedAt, agreedBy[], agreedAt (one current household reward)', state.data.reward ? 1 : 0],
+                ['points (derived)', 'userId, sourceType, deltaPoints, awardedAt: computed from assignments and settle-ups, never stored', '–'],
               ].map(([n, f, c]) => (
                 <tr key={n as string}>
                   <td className="px-3 py-2 font-mono font-semibold">{n}</td>
@@ -205,6 +224,7 @@ export function PocInfo({ onShowValidation }: { onShowValidation: () => void }) 
                 'Weekly chore rotation and completion history',
                 'Shared household views from different roommates',
                 'Interactive navigation and bilingual interface',
+                'Release 2 preview: points, streaks, leaderboard and agreed reward',
               ].map((x) => (
                 <li key={x} className="flex gap-1.5">
                   <CircleCheck size={15} className="mt-0.5 shrink-0 text-good" aria-hidden /> {x}
@@ -256,6 +276,10 @@ export function PocInfo({ onShowValidation }: { onShowValidation: () => void }) 
           </li>
           <li>
             <strong>Settle-up rule.</strong> Capping payments at the suggested pair amount is a PoC simplification. Partial and arbitrary payments need product decisions.
+          </li>
+          <li>
+            <strong>Gamification balance.</strong> Points reward speed and consistency, not effort; a quick chore and a deep clean score the same. Weighting and
+            anti-gaming rules (for example, completing chores that were never done) need household testing.
           </li>
           <li>
             <strong>Usability and language.</strong> No user testing has been done. French copy should be reviewed by a native Québécois speaker.

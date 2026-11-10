@@ -23,17 +23,17 @@ export function ExpenseDetailSheet({ id }: { id: string }) {
 
   return (
     <Sheet title={tr.t('detail.title')} onClose={closeSheet}>
-      <div className="flex items-center gap-3 rounded-3xl bg-mustard-50 p-4 ring-1 ring-mustard/30">
-        <span className="grid size-12 place-items-center rounded-2xl bg-mustard">
-          <Receipt size={22} aria-hidden />
+      <div className="flex items-center gap-3 rounded-[20px] bg-cream p-4">
+        <span className="grid size-11 place-items-center rounded-full bg-mustard-50 text-mustard-600">
+          <Receipt size={20} aria-hidden />
         </span>
         <div className="min-w-0">
           <p className="truncate text-base font-bold">{e.title}</p>
-          <p className="tabular text-2xl font-extrabold tracking-tight">{tr.money(e.totalCents)}</p>
+          <p className="tabular text-[24px] font-bold tracking-tight">{tr.money(e.totalCents)}</p>
         </div>
       </div>
 
-      <dl className="mt-4 divide-y divide-line rounded-2xl bg-cream px-3.5">
+      <dl className="mt-3 divide-y divide-line rounded-[20px] px-1">
         {rows.map(([k, val]) => (
           <div key={k} className="flex justify-between gap-4 py-2.5 text-sm">
             <dt className="text-muted">{k}</dt>
@@ -42,7 +42,7 @@ export function ExpenseDetailSheet({ id }: { id: string }) {
         ))}
       </dl>
 
-      <h3 className="mb-2 mt-5 text-[13px] font-bold uppercase tracking-wide text-muted">{tr.t('detail.shares')}</h3>
+      <h3 className="mb-2 mt-5 text-[13px] font-semibold text-muted">{tr.t('detail.shares')}</h3>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-[11.5px] uppercase tracking-wide text-muted">
@@ -53,7 +53,7 @@ export function ExpenseDetailSheet({ id }: { id: string }) {
         </thead>
         <tbody className="divide-y divide-line">
           {e.splits.map((s) => (
-            <tr key={s.userId} className={cx(s.userId === viewerId && 'bg-mustard-50/60')}>
+            <tr key={s.userId} className={cx(s.userId === viewerId && 'bg-pine-50/60')}>
               <td className="py-2.5">
                 <span className="flex items-center gap-2 font-semibold">
                   <Avatar member={h.member(s.userId)} size="xs" /> {h.who(s.userId)}
@@ -65,7 +65,7 @@ export function ExpenseDetailSheet({ id }: { id: string }) {
           ))}
         </tbody>
       </table>
-      <p className="mt-2 flex items-center gap-1.5 text-[12.5px] font-medium text-good">
+      <p className="mt-2 flex items-center gap-1.5 text-[12.5px] font-medium text-pine">
         <CircleCheck size={14} aria-hidden /> {tr.t('detail.sumCheck', { total: tr.money(sumCents(e.splits.map((s) => s.owedCents))) })}
       </p>
       {eq && eq.remainderCents > 0 && (

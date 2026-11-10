@@ -63,16 +63,16 @@ export function SettleUpSheet({ fromUserId, toUserId }: { fromUserId?: MemberId;
         </Button>
       }
     >
-      <p className="mb-4 flex gap-2 rounded-2xl bg-cream p-3 text-[13px] text-ink-2">
+      <p className="mb-5 flex gap-2 text-[12.5px] leading-snug text-muted">
         <Info size={16} className="mt-0.5 shrink-0 text-muted" aria-hidden />
         {tr.t('settle.explain')}
       </p>
 
-      <h3 className="mb-1.5 text-[13px] font-semibold text-ink-2">{tr.t('settle.suggested')}</h3>
+      <h3 className="mb-1.5 text-[12.5px] font-semibold text-muted">{tr.t('settle.suggested')}</h3>
       {h.transfers.length === 0 ? (
         <p className="mb-4 rounded-2xl bg-good-50 p-3 text-sm font-medium text-good">{tr.t('settle.none')}</p>
       ) : (
-        <div className="mb-4 space-y-1.5">
+        <div className="mb-5 space-y-1.5">
           {h.transfers.map((t) => {
             const active = draft.fromUserId === t.fromUserId && draft.toUserId === t.toUserId;
             return (
@@ -82,8 +82,8 @@ export function SettleUpSheet({ fromUserId, toUserId }: { fromUserId?: MemberId;
                 aria-pressed={active}
                 onClick={() => setDraft({ fromUserId: t.fromUserId, toUserId: t.toUserId, amount: centsToInput(t.amountCents, tr.lang) })}
                 className={cx(
-                  'flex min-h-12 w-full items-center gap-2 rounded-2xl px-3 text-left text-sm ring-1 transition',
-                  active ? 'bg-mustard-50 ring-2 ring-mustard' : 'bg-surface ring-line hover:ring-mustard/50',
+                  'flex min-h-11 w-full items-center gap-2 rounded-2xl px-3 text-left text-[13px] ring-1 transition',
+                  active ? 'bg-pine-50 ring-2 ring-pine' : 'bg-surface ring-line hover:ring-pine/40',
                 )}
               >
                 <Avatar member={h.member(t.fromUserId)} size="xs" />
@@ -134,7 +134,7 @@ export function SettleUpSheet({ fromUserId, toUserId }: { fromUserId?: MemberId;
                   {tr.t('settle.outstanding', { amount: tr.money(max) })}
                   <button
                     type="button"
-                    className="font-semibold text-mustard-600 hover:underline"
+                    className="font-semibold text-pine hover:underline"
                     onClick={() => setDraft((d) => ({ ...d, amount: centsToInput(max, tr.lang) }))}
                   >
                     {tr.t('settle.useFull')}

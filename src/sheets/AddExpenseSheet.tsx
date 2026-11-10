@@ -141,7 +141,7 @@ export function AddExpenseSheet() {
                       <Avatar member={h.member(s.userId)} size="xs" />
                       <span className="flex-1 font-medium">{h.member(s.userId).name}</span>
                       {equalInfo.extraCentTo.includes(s.userId) && (
-                        <span className="rounded-full bg-mustard-100 px-1.5 text-[11px] font-bold">+1¢</span>
+                        <span className="rounded-full bg-mustard-50 px-1.5 text-[11px] font-bold text-mustard-600">+1¢</span>
                       )}
                       <span className="tabular font-bold">{tr.money(s.owedCents)}</span>
                     </li>
@@ -167,7 +167,7 @@ export function AddExpenseSheet() {
           </div>
         ) : (
           <div data-testid="custom-split">
-            <p className="mb-1.5 text-[13px] font-semibold text-ink-2">{tr.t('expenseForm.shares')}</p>
+            <p className="mb-1.5 text-[12.5px] font-semibold text-muted">{tr.t('expenseForm.shares')}</p>
             <div className="space-y-2">
               {MEMBER_ORDER.map((m) => {
                 const err = show(`share-${m}`) ? moneyError(errors.shares?.[m], tr) : undefined;
@@ -206,7 +206,7 @@ export function AddExpenseSheet() {
                 data-testid="allocation-feedback"
                 className={cx(
                   'mt-2 flex items-start gap-1.5 text-[13px] font-medium',
-                  errors.allocation ? (submitted ? 'text-bad' : 'text-ink-2') : 'text-good',
+                  errors.allocation ? (submitted ? 'text-bad' : 'text-ink-2') : 'text-pine',
                 )}
               >
                 {!errors.allocation && <CircleCheck size={15} className="mt-0.5 shrink-0" aria-hidden />}
@@ -231,7 +231,7 @@ function AllocationMeter({ total, allocated, remaining }: { total: number | null
   const pct = total ? Math.min(100, Math.round((allocated / total) * 100)) : 0;
   const over = remaining !== null && remaining < 0;
   return (
-    <div className="mt-3 rounded-2xl bg-cream p-3">
+    <div className="mt-3 rounded-2xl bg-cream/70 p-3">
       <div className="grid grid-cols-3 text-center">
         {[
           { label: tr.t('expenseForm.total'), value: total === null ? '—' : tr.money(total) },
@@ -239,15 +239,15 @@ function AllocationMeter({ total, allocated, remaining }: { total: number | null
           { label: tr.t('expenseForm.remaining'), value: remaining === null ? '—' : tr.money(remaining), strong: true },
         ].map((c) => (
           <div key={c.label}>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{c.label}</p>
-            <p className={cx('tabular text-[15px] font-bold', c.strong && over && 'text-bad', c.strong && remaining === 0 && 'text-good')}>
+            <p className="text-[11px] font-medium text-muted">{c.label}</p>
+            <p className={cx('tabular text-[15px] font-bold', c.strong && over && 'text-bad', c.strong && remaining === 0 && 'text-pine')}>
               {c.value}
             </p>
           </div>
         ))}
       </div>
       <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-line" aria-hidden>
-        <div className={cx('h-full rounded-full transition-all', over ? 'bg-bad' : remaining === 0 ? 'bg-good' : 'bg-mustard')} style={{ width: `${pct}%` }} />
+        <div className={cx('h-full rounded-full transition-all', over ? 'bg-bad' : remaining === 0 ? 'bg-pine' : 'bg-mustard')} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 Room Sync PoC – validation results
-Generated: 2026-11-10T00:14:01.787Z
+Generated: 2026-11-10T00:42:10.922Z
 Environment: Room Sync local interactive PoC – checks run in isolated in-memory state
-Result: 12/12 checks passed
+Result: 13/13 checks passed
 
 [PASS] A – Equal expense split (FR-03, FR-04, NFR-05)
   Setup: Zero balances. Syed pays $60.00, split equally among all three members.
@@ -133,3 +133,18 @@ Result: 12/12 checks passed
   Actual:   Non-integer balances: 0
   Expected: Suggested transfers clear all balances: yes
   Actual:   Suggested transfers clear all balances: yes (2 transfers)
+
+[PASS] M – Points, streaks, leaderboard and agreed reward (Release 2 preview) (FR-13, FR-14)
+  Setup: Clean scenario. W1: Syed does his chore on time; Abin records a $10.00 settle-up. W2: Abin finishes his W1 chore late; Syed does his W2 chore on time. Then week 3 starts. A "$20 cash" reward is proposed, then "Skip one dish week", which all three agree to.
+  Expected: Points: Syed 20, Abin 8, Debbie 0
+  Actual:   Points: Syed 20, Abin 8, Debbie 0
+  Expected: Streaks (weeks): Syed 2, Abin 0, Debbie 0
+  Actual:   Streaks (weeks): Syed 2, Abin 0, Debbie 0
+  Expected: Leaderboard: Syed → Abin → Debbie
+  Actual:   Leaderboard: Syed → Abin → Debbie
+  Expected: Cash reward "$20 cash": rejected
+  Actual:   Cash reward "$20 cash": rejected
+  Expected: Agreed after 2 of 3: no · after 3 of 3: yes · agreed events: 1
+  Actual:   Agreed after 2 of 3: no · after 3 of 3: yes · agreed events: 1
+  Expected: Points stored in records: no (derived)
+  Actual:   Points stored in records: no (derived)

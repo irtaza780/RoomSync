@@ -11,7 +11,7 @@ export function ProfileSheet() {
   const { closeSheet, viewerId } = usePhone();
   return (
     <Sheet title={tr.t('settings.title')} onClose={closeSheet}>
-      <div className="flex items-center gap-3 rounded-3xl bg-cream p-4">
+      <div className="flex items-center gap-3 rounded-[20px] bg-pine-50 p-4">
         <Avatar member={h.viewer} size="lg" />
         <div>
           <p className="text-[12px] font-semibold text-muted">{tr.t('settings.signedInAs')}</p>
@@ -20,7 +20,7 @@ export function ProfileSheet() {
       </div>
       <p className="mt-2 px-1 text-[12.5px] text-muted">{tr.t('settings.demoNote')}</p>
 
-      <h3 className="mb-1.5 mt-5 text-[13px] font-semibold text-ink-2">{tr.t('settings.language')}</h3>
+      <h3 className="mb-1.5 mt-5 text-[12.5px] font-semibold text-muted">{tr.t('settings.language')}</h3>
       <Segmented<Lang>
         label={tr.t('settings.language')}
         value={state.prefs.lang}
@@ -31,7 +31,7 @@ export function ProfileSheet() {
         ]}
       />
 
-      <h3 className="mb-1.5 mt-5 text-[13px] font-semibold text-ink-2">{tr.t('settings.household')}</h3>
+      <h3 className="mb-1.5 mt-5 text-[12.5px] font-semibold text-muted">{tr.t('settings.household')}</h3>
       <div className="rounded-2xl bg-cream p-3.5">
         <p className="font-bold">{h.data.household.name}</p>
         <p className="flex items-center gap-1 text-[13px] text-muted">

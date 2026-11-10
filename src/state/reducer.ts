@@ -1,4 +1,5 @@
 import { newAssignment, rotateForWeek, validateChoreDraft, type ChoreDraft } from '../domain/chores';
+import { isRewardAgreed, validateRewardTitle } from '../domain/rewards';
 import { MEMBER_ORDER } from '../domain/types';
 import {
   balancesOf,
@@ -21,7 +22,9 @@ export type DataAction =
   | { type: 'ADD_SETTLEMENT'; id: string; at: string; actorId: MemberId; draft: SettlementDraft }
   | { type: 'ADD_CHORE'; id: string; at: string; actorId: MemberId; draft: ChoreDraft }
   | { type: 'COMPLETE_ASSIGNMENT'; assignmentId: string; at: string; actorId: MemberId }
-  | { type: 'ADVANCE_WEEK'; toWeek: number; at: string };
+  | { type: 'ADVANCE_WEEK'; toWeek: number; at: string }
+  | { type: 'PROPOSE_REWARD'; id: string; at: string; actorId: MemberId; title: string }
+  | { type: 'AGREE_REWARD'; rewardId: string; at: string; actorId: MemberId };
 
 export type AppAction =
   | DataAction
@@ -153,6 +156,28 @@ export function householdReducer(data: HouseholdData, action: DataAction): House
           payload: { choreId: a.choreId, title: titleOf(a.choreId), assigneeId: a.assigneeId, week: a.week },
         })),
       ]);
+    }
+
+    case 'PROPOSE_REWARD': {
+      if (data.reward?.id === action.id) return data;
+      const v = validateRewardTitle(action.title);
+      if (!v.ok) return data;
+      // A new proposal replaces the previous one; the proposer counts as agreeing.
+      const reward = { id: action.id, title: v.title, proposedBy: action.actorId, proposedAt: action.at, agreedBy: [action.actorId] };
+      return withActivity({ ...data, reward }, [
+        { type: 'reward_proposed', actorId: action.actorId, at: action.at, payload: { rewardId: reward.id, title: reward.title } },
+      ]);
+    }
+
+    case 'AGREE_REWARD': {
+      const r = data.reward;
+      if (!r || r.id !== action.rewardId || r.agreedBy.includes(action.actorId)) return data;
+      const agreedBy = MEMBER_ORDER.filter((m) => m === action.actorId || r.agreedBy.includes(m));
+      const reward = { ...r, agreedBy, ...(isRewardAgreed({ agreedBy }) ? { agreedAt: action.at } : {}) };
+      const next = { ...data, reward };
+      return isRewardAgreed(reward)
+        ? withActivity(next, [{ type: 'reward_agreed', actorId: action.actorId, at: action.at, payload: { rewardId: r.id, title: r.title } }])
+        : next;
     }
   }
 }

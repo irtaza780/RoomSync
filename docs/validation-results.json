@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-10T00:14:01.787Z",
+  "generatedAt": "2026-11-10T00:42:10.922Z",
   "environment": "Room Sync local interactive PoC – checks run in isolated in-memory state",
-  "passed": 12,
-  "total": 12,
+  "passed": 13,
+  "total": 13,
   "results": [
     {
       "id": "A",
@@ -268,6 +268,32 @@
         "Zero-sum violations: 0",
         "Non-integer balances: 0",
         "Suggested transfers clear all balances: yes (2 transfers)"
+      ],
+      "pass": true
+    },
+    {
+      "id": "M",
+      "title": "Points, streaks, leaderboard and agreed reward (Release 2 preview)",
+      "requirements": [
+        "FR-13",
+        "FR-14"
+      ],
+      "setup": "Clean scenario. W1: Syed does his chore on time; Abin records a $10.00 settle-up. W2: Abin finishes his W1 chore late; Syed does his W2 chore on time. Then week 3 starts. A \"$20 cash\" reward is proposed, then \"Skip one dish week\", which all three agree to.",
+      "expected": [
+        "Points: Syed 20, Abin 8, Debbie 0",
+        "Streaks (weeks): Syed 2, Abin 0, Debbie 0",
+        "Leaderboard: Syed → Abin → Debbie",
+        "Cash reward \"$20 cash\": rejected",
+        "Agreed after 2 of 3: no · after 3 of 3: yes · agreed events: 1",
+        "Points stored in records: no (derived)"
+      ],
+      "actual": [
+        "Points: Syed 20, Abin 8, Debbie 0",
+        "Streaks (weeks): Syed 2, Abin 0, Debbie 0",
+        "Leaderboard: Syed → Abin → Debbie",
+        "Cash reward \"$20 cash\": rejected",
+        "Agreed after 2 of 3: no · after 3 of 3: yes · agreed events: 1",
+        "Points stored in records: no (derived)"
       ],
       "pass": true
     }

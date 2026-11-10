@@ -64,7 +64,7 @@ export function AddChoreSheet() {
           />
         </Field>
         <Field label={tr.t('choreForm.frequency')}>
-          <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-mustard-50 px-3 text-sm font-semibold ring-1 ring-mustard/40">
+          <span className="inline-flex min-h-9 items-center gap-2 rounded-full bg-pine-50 px-3.5 text-[13px] font-semibold text-pine-900">
             <RefreshCw size={15} aria-hidden /> {tr.t('chores.weekly')}
           </span>
         </Field>
@@ -78,10 +78,10 @@ export function AddChoreSheet() {
             youLabel={tr.t('common.you')}
           />
         </Field>
-        <h3 className="mb-1.5 text-[13px] font-semibold text-ink-2">{tr.t('choreForm.preview')}</h3>
+        <h3 className="mb-1.5 text-[12.5px] font-semibold text-muted">{tr.t('choreForm.preview')}</h3>
         <ol className="grid grid-cols-4 gap-1.5" data-testid="rotation-preview">
           {preview.map((p) => (
-            <li key={p.week} className="flex flex-col items-center gap-1 rounded-2xl bg-cream px-1 py-2.5 text-center">
+            <li key={p.week} className="flex flex-col items-center gap-1 rounded-2xl bg-cream/70 px-1 py-2.5 text-center">
               <span className="text-[11px] font-semibold text-muted">{tr.t('common.week', { n: p.week })}</span>
               <Avatar member={h.member(p.assigneeId)} size="sm" />
               <span className="text-[12px] font-semibold">{h.member(p.assigneeId).name}</span>

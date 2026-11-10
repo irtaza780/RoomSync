@@ -92,7 +92,9 @@ export type ActivityEntry =
   | ActivityBase<'chore_created', { choreId: string; title: string; assigneeId: MemberId }>
   | ActivityBase<'chore_completed', { choreId: string; title: string; week: number; late: boolean }>
   | ActivityBase<'week_advanced', { week: number; rotated: number }>
-  | ActivityBase<'chore_overdue', { choreId: string; title: string; assigneeId: MemberId; week: number }>;
+  | ActivityBase<'chore_overdue', { choreId: string; title: string; assigneeId: MemberId; week: number }>
+  | ActivityBase<'reward_proposed', { rewardId: string; title: string }>
+  | ActivityBase<'reward_agreed', { rewardId: string; title: string }>;
 
 interface ActivityBase<T extends string, P> {
   id: string;
@@ -106,6 +108,17 @@ interface ActivityBase<T extends string, P> {
 
 export type ActivityType = ActivityEntry['type'];
 
+/** FR-14: a household-agreed, non-cash reward for the leaderboard leader. */
+export interface HouseholdReward {
+  id: string;
+  title: string;
+  proposedBy: MemberId;
+  proposedAt: string;
+  /** Members who agreed. The reward is active once every member has agreed. */
+  agreedBy: MemberId[];
+  agreedAt?: string;
+}
+
 export interface HouseholdData {
   household: Household;
   members: Member[];
@@ -114,6 +127,8 @@ export interface HouseholdData {
   chores: Chore[];
   assignments: Assignment[];
   activity: ActivityEntry[];
+  /** Release 2 preview (FR-14). Older saved demos without this field load as null. */
+  reward: HouseholdReward | null;
   currentWeek: number;
   /** Monotonic counter used to order activity entries. */
   seq: number;

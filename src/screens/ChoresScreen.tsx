@@ -1,11 +1,11 @@
-import { ListChecks, Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { ChevronDown, ListChecks, Plus, RefreshCw, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { assignmentStatus, sortAssignments } from '../domain/chores';
 import { formatWeekRange } from '../domain/dates';
 import { MEMBER_ORDER } from '../domain/types';
 import { useHousehold, usePhone, useT } from '../phone/context';
-import { ChoreRow } from '../phone/shared';
-import { Avatar, Button, EmptyState, SectionTitle } from '../ui/primitives';
+import { ChoreRow, PointsPill } from '../phone/shared';
+import { Avatar, Button, EmptyState, Group, SectionTitle, cx } from '../ui/primitives';
 
 export function ChoresScreen() {
   const tr = useT();
@@ -16,48 +16,48 @@ export function ChoresScreen() {
 
   const thisWeek = sortAssignments(h.data.assignments.filter((a) => a.week === week), h.today);
   const mine = thisWeek.filter((a) => a.assigneeId === viewerId);
+  const others = thisWeek.filter((a) => a.assigneeId !== viewerId);
   const overdue = sortAssignments(
     h.data.assignments.filter((a) => a.week < week && assignmentStatus(a, h.today) === 'overdue'),
     h.today,
   );
-  const history = h.data.assignments
-    .filter((a) => a.week < week && a.status === 'done')
-    .sort((a, b) => b.week - a.week || a.choreId.localeCompare(b.choreId));
+  const history = h.data.assignments.filter((a) => a.week < week && a.status === 'done').sort((a, b) => b.week - a.week || a.choreId.localeCompare(b.choreId));
 
   return (
-    <div className="px-4 pb-6">
-      <div className="mb-3 mt-1 flex items-end justify-between px-1">
-        <div>
-          <p className="text-[13px] font-medium text-muted">{tr.t('chores.weekLabel', { n: week, range: formatWeekRange(week, tr.lang) })}</p>
-          <h1 className="text-2xl font-extrabold tracking-tight">{tr.t('chores.title')}</h1>
+    <div className="px-5 pb-32">
+      <p className="mt-2 text-[12.5px] font-medium text-muted">{tr.t('chores.weekLabel', { n: week, range: formatWeekRange(week, tr.lang) })}</p>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h1 className="truncate text-[24px] font-bold tracking-tight">{tr.t('chores.title')}</h1>
+        <div className="flex shrink-0 items-center gap-2">
+          <PointsPill />
+          <Button size="sm" variant="secondary" onClick={() => openSheet({ kind: 'addChore' })}>
+            <Plus size={15} aria-hidden /> {tr.t('common.new')}
+          </Button>
         </div>
-        <Button className="min-h-10 px-3" onClick={() => openSheet({ kind: 'addChore' })}>
-          <Plus size={18} aria-hidden /> {tr.t('chores.add')}
-        </Button>
       </div>
 
-      {/* Rotation rule explainer */}
-      <div className="flex items-start gap-3 rounded-2xl bg-mustard-50 p-3.5 ring-1 ring-mustard/30">
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mustard text-ink">
-          <RefreshCw size={17} aria-hidden />
-        </span>
+      {/* Rotation rule */}
+      <div className="flex items-center gap-3 rounded-2xl bg-pine-50 px-3.5 py-3">
+        <RefreshCw size={16} className="shrink-0 text-pine" aria-hidden />
         <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-1 text-[13px] font-bold">
-            {tr.t('chores.weekly')}:
-            {[...MEMBER_ORDER, MEMBER_ORDER[0]].map((id, i) => (
-              <span key={i} className="inline-flex items-center gap-1">
-                {i > 0 && <span className="text-muted">→</span>}
-                <Avatar member={h.member(id)} size="xs" />
-              </span>
-            ))}
+          <p className="flex flex-wrap items-center gap-1 text-[12.5px] font-semibold text-pine-900">
+            {tr.t('chores.weekly')}
+            <span className="ml-1 flex items-center gap-0.5">
+              {[...MEMBER_ORDER, MEMBER_ORDER[0]].map((id, i) => (
+                <span key={i} className="inline-flex items-center gap-0.5">
+                  {i > 0 && <span className="text-[10px] text-pine/60">→</span>}
+                  <Avatar member={h.member(id)} size="xs" />
+                </span>
+              ))}
+            </span>
           </p>
-          <p className="mt-0.5 text-[12.5px] text-ink-2">{tr.t('chores.rotationHint')}</p>
+          <p className="mt-0.5 text-[12px] leading-snug text-pine-900/75">{tr.t('chores.rotationHint')}</p>
         </div>
       </div>
 
       {h.data.chores.length === 0 ? (
-        <div className="mt-5">
-          <EmptyState icon={<ListChecks size={20} />}>{tr.t('chores.empty')}</EmptyState>
+        <div className="mt-6">
+          <EmptyState icon={<ListChecks size={17} />}>{tr.t('chores.empty')}</EmptyState>
         </div>
       ) : (
         <>
@@ -66,31 +66,35 @@ export function ChoresScreen() {
               <SectionTitle>
                 <span className="text-bad">{tr.t('chores.overdue')}</span>
               </SectionTitle>
-              <div className="space-y-2">
+              <Group className="divide-y divide-line">
                 {overdue.map((a) => (
                   <ChoreRow key={a.id} a={a} showNext={false} />
                 ))}
-              </div>
+              </Group>
             </>
           )}
 
           <SectionTitle>{tr.t('chores.yours')}</SectionTitle>
-          <div className="space-y-2">
-            {mine.length === 0 ? (
-              <EmptyState icon={<Sparkles size={20} />}>{tr.t('chores.noneYours')}</EmptyState>
-            ) : (
-              mine.map((a) => <ChoreRow key={a.id} a={a} />)
-            )}
-          </div>
-
-          <SectionTitle>{tr.t('chores.household')}</SectionTitle>
-          <div className="space-y-2">
-            {thisWeek
-              .filter((a) => a.assigneeId !== viewerId)
-              .map((a) => (
+          {mine.length === 0 ? (
+            <EmptyState icon={<Sparkles size={17} />}>{tr.t('chores.noneYours')}</EmptyState>
+          ) : (
+            <Group className="divide-y divide-line">
+              {mine.map((a) => (
                 <ChoreRow key={a.id} a={a} />
               ))}
-          </div>
+            </Group>
+          )}
+
+          {others.length > 0 && (
+            <>
+              <SectionTitle>{tr.t('chores.household')}</SectionTitle>
+              <Group className="divide-y divide-line">
+                {others.map((a) => (
+                  <ChoreRow key={a.id} a={a} />
+                ))}
+              </Group>
+            </>
+          )}
 
           {history.length > 0 && (
             <>
@@ -100,23 +104,24 @@ export function ChoresScreen() {
                     type="button"
                     aria-expanded={showHistory}
                     onClick={() => setShowHistory((v) => !v)}
-                    className="min-h-8 rounded-lg px-1 text-[13px] font-semibold text-mustard-600 hover:underline"
+                    className="flex min-h-8 items-center gap-1 rounded-full px-2 text-[13px] font-semibold text-pine hover:bg-pine-50"
                   >
-                    {showHistory ? '−' : '+'} {history.length}
+                    {history.length}
+                    <ChevronDown size={15} className={cx('transition', showHistory && 'rotate-180')} aria-hidden />
                   </button>
                 }
               >
                 {tr.t('chores.history')}
               </SectionTitle>
               {showHistory && (
-                <div className="space-y-2">
+                <Group className="divide-y divide-line">
                   {history.map((a) => (
                     <div key={a.id}>
-                      <p className="mb-1 px-1 text-[11.5px] font-semibold text-muted">{tr.t('common.week', { n: a.week })}</p>
+                      <p className="px-3.5 pt-2.5 text-[11px] font-semibold text-muted">{tr.t('common.week', { n: a.week })}</p>
                       <ChoreRow a={a} showNext={false} />
                     </div>
                   ))}
-                </div>
+                </Group>
               )}
             </>
           )}

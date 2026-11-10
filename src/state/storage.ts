@@ -78,6 +78,8 @@ export function validatePersistedState(s: unknown): string | null {
       return 'invalid assignment';
   }
   for (const a of d.activity) if (!a || !isStr(a.type) || !isInt(a.seq)) return 'invalid activity entry';
+  if (d.reward != null && (!isStr(d.reward.title) || !isArr(d.reward.agreedBy) || !d.reward.agreedBy.every(isMember)))
+    return 'invalid reward';
   if (householdTotal(computeBalances(d.expenses, d.settlements)) !== 0) return 'balances do not sum to zero';
   return null;
 }
@@ -100,6 +102,8 @@ export function loadState(store: KeyValueStore | null): LoadResult {
   const env = parsed as Partial<PersistedV1>;
   if (!env || typeof env !== 'object' || env.version !== STORAGE_VERSION)
     return { status: 'incompatible', state: initialAppState(), detail: `unsupported version ${String(env?.version)}` };
+  // Backward compatible: demos saved before the rewards preview have no `reward` field.
+  if (env.state && typeof env.state === 'object' && env.state.data && env.state.data.reward === undefined) env.state.data.reward = null;
   const reason = validatePersistedState(env.state);
   if (reason) return { status: 'corrupt', state: initialAppState(), detail: reason };
   return { status: 'ok', state: env.state as AppState };

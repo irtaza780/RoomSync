@@ -32,7 +32,7 @@ function Chip({ active, onClick, children, testId }: { active: boolean; onClick:
       data-testid={testId}
       className={cx(
         'flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 text-[13px] font-semibold ring-1 transition',
-        active ? 'bg-ink text-surface ring-ink' : 'bg-surface text-ink ring-line hover:ring-mustard',
+        active ? 'bg-pine-900 text-white ring-pine-900' : 'bg-surface text-ink ring-line hover:ring-pine/50',
       )}
     >
       {children}
@@ -48,8 +48,8 @@ function ActionButton({ onClick, children, variant = 'plain', testId }: { onClic
       data-testid={testId}
       className={cx(
         'flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-[13px] font-semibold ring-1 transition',
-        variant === 'accent' && 'bg-mustard ring-mustard hover:bg-mustard-600',
-        variant === 'plain' && 'bg-surface ring-line hover:ring-mustard',
+        variant === 'accent' && 'bg-pine text-white ring-pine hover:bg-pine-700',
+        variant === 'plain' && 'bg-surface ring-line hover:ring-pine/50',
         variant === 'danger' && 'bg-surface text-bad ring-bad/30 hover:bg-bad-50',
       )}
     >
@@ -155,7 +155,7 @@ export function PresenterPanel({ onOpenEvidence }: { onOpenEvidence: (t: Evidenc
             {MEMBER_ORDER.map((id) => (
               <li key={id} className="flex justify-between">
                 <span>{MEMBERS.find((m) => m.id === id)!.name}</span>
-                <span className={cx('tabular font-semibold', b[id] > 0 && 'text-good')}>{formatCents(b[id], 'en', { signed: true })}</span>
+                <span className={cx('tabular font-semibold', b[id] > 0 && 'text-pine')}>{formatCents(b[id], 'en', { signed: true })}</span>
               </li>
             ))}
             <li className="flex justify-between border-t border-dashed border-line pt-1 font-bold">
@@ -171,7 +171,7 @@ export function PresenterPanel({ onOpenEvidence }: { onOpenEvidence: (t: Evidenc
           <label className="flex min-h-10 cursor-pointer items-center gap-2 text-[13px] font-semibold">
             <input
               type="checkbox"
-              className="size-4 accent-[#d9a21b]"
+              className="size-4 accent-[#2f6b4f]"
               checked={prefs.showSecondPhone}
               onChange={(e) => dispatch({ type: 'SET_SHOW_SECOND', show: e.target.checked })}
               data-testid="toggle-second-phone"

@@ -34,7 +34,7 @@ export default function App() {
           type="button"
           onClick={() => setPanelOpen(true)}
           aria-label="Open presenter controls"
-          className="fixed bottom-[92px] right-0 z-40 grid size-11 place-items-center rounded-l-2xl bg-ink/85 text-surface shadow-phone backdrop-blur"
+          className="fixed right-0 top-[60px] z-40 grid size-10 place-items-center rounded-l-2xl bg-ink/75 text-surface shadow-float backdrop-blur"
         >
           <SlidersHorizontal size={17} aria-hidden />
         </button>

@@ -24,6 +24,7 @@ export function emptyHousehold(week = 1): HouseholdData {
     chores: [],
     assignments: [],
     activity: [],
+    reward: null,
     currentWeek: week,
     seq: 0,
   };
@@ -76,6 +77,8 @@ function populatedActions(): DataAction[] {
       actorId: 'debbie',
       draft: custom('Cleaning supplies', '32.50', 'debbie', { syed: '10.00', abin: '12.50', debbie: '10.00' }),
     },
+    { type: 'PROPOSE_REWARD', id: 'reward-dishes', at: demoAt(1, 4, 19, 0), actorId: 'abin', title: 'Skip one dish week' },
+    { type: 'AGREE_REWARD', rewardId: 'reward-dishes', at: demoAt(1, 4, 21, 30), actorId: 'debbie' },
     { type: 'COMPLETE_ASSIGNMENT', assignmentId: 'asg-chore-kitchen-w1', at: demoAt(1, 5, 11, 30), actorId: 'syed' },
     { type: 'COMPLETE_ASSIGNMENT', assignmentId: 'asg-chore-trash-w1', at: demoAt(1, 6, 20, 15), actorId: 'abin' },
     // Bathroom (Debbie, week 1) is left incomplete → becomes overdue.

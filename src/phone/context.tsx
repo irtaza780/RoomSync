@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import { demoToday } from '../domain/dates';
 import { balancesOf, suggestTransfers } from '../domain/expenses';
+import { leaderboard } from '../domain/rewards';
 import type { MemberId } from '../domain/types';
 import { getTranslator } from '../i18n';
 import { useStore } from '../state/store';
@@ -13,6 +14,7 @@ export type SheetState =
   | { kind: 'settle'; fromUserId?: MemberId; toUserId?: MemberId }
   | { kind: 'addChore' }
   | { kind: 'profile' }
+  | { kind: 'rewards' }
   | null;
 
 export interface PhoneCtx {
@@ -54,6 +56,7 @@ export function useHousehold() {
       if (id === viewerId) return tr.t(capital ? 'common.you' : 'common.youLower');
       return member(id).name;
     };
-    return { data: d, balances, transfers, today, member, who, viewer: member(viewerId) };
+    const board = leaderboard(d);
+    return { data: d, balances, transfers, today, member, who, viewer: member(viewerId), board };
   }, [d, viewerId, tr]);
 }

@@ -17,6 +17,7 @@ import {
   type ExpenseDraft,
 } from '../domain/expenses';
 import { formatCents, parseCents } from '../domain/money';
+import { isRewardAgreed, leaderboard, pointsByMember, streakOf } from '../domain/rewards';
 import { MEMBER_ORDER, type AppState, type Balances, type HouseholdData, type MemberId } from '../domain/types';
 import { getTranslator } from '../i18n';
 import { appReducer, householdReducer, type DataAction } from '../state/reducer';
@@ -440,6 +441,68 @@ function checkZeroSumStress(): CheckResult {
   });
 }
 
+function checkGamification(): CheckResult {
+  return run(
+    'M',
+    'Points, streaks, leaderboard and agreed reward (Release 2 preview)',
+    ['FR-13', 'FR-14'],
+    'Clean scenario. W1: Syed does his chore on time; Abin records a $10.00 settle-up. W2: Abin finishes his W1 chore late; Syed does his W2 chore on time. Then week 3 starts. A "$20 cash" reward is proposed, then "Skip one dish week", which all three agree to.',
+    () => {
+      const at = (w: number) => demoAt(w, 2, 12);
+      let s = buildScenario('clean');
+      s = replay(s, [
+        { type: 'COMPLETE_ASSIGNMENT', assignmentId: 'asg-chore-kitchen-w1', at: at(1), actorId: 'syed' },
+        expenseAction({ amount: '30.00', payerId: 'syed' }, 'exp-m'),
+        { type: 'ADD_SETTLEMENT', id: 'set-m', at: at(1), actorId: 'abin', draft: { fromUserId: 'abin', toUserId: 'syed', amount: '10.00' } },
+        { type: 'ADVANCE_WEEK', toWeek: 2, at: demoAt(2, 0, 0) },
+        { type: 'COMPLETE_ASSIGNMENT', assignmentId: 'asg-chore-trash-w1', at: at(2), actorId: 'abin' },
+        { type: 'COMPLETE_ASSIGNMENT', assignmentId: 'asg-chore-bathroom-w2', at: at(2), actorId: 'syed' },
+        { type: 'ADVANCE_WEEK', toWeek: 3, at: demoAt(3, 0, 0) },
+      ]);
+      const pts = pointsByMember(s);
+      const streaks = MEMBER_ORDER.map((m) => streakOf(s, m));
+      const order = leaderboard(s).map((r) => NAME[r.memberId]);
+      const cash = replay(s, [{ type: 'PROPOSE_REWARD', id: 'r-cash', at: at(3), actorId: 'debbie', title: '$20 cash' }]);
+      let r = replay(s, [{ type: 'PROPOSE_REWARD', id: 'r-dish', at: at(3), actorId: 'syed', title: 'Skip one dish week' }]);
+      r = householdReducer(r, { type: 'AGREE_REWARD', rewardId: 'r-dish', at: at(3), actorId: 'abin' });
+      const partial = isRewardAgreed(r.reward);
+      r = householdReducer(r, { type: 'AGREE_REWARD', rewardId: 'r-dish', at: at(3), actorId: 'debbie' });
+      r = householdReducer(r, { type: 'AGREE_REWARD', rewardId: 'r-dish', at: at(3), actorId: 'debbie' }); // repeat: ignored
+      const agreedEvents = r.activity.filter((e) => e.type === 'reward_agreed').length;
+      const stored = 'points' in s || 'streak' in s;
+      return {
+        expected: [
+          'Points: Syed 20, Abin 8, Debbie 0',
+          'Streaks (weeks): Syed 2, Abin 0, Debbie 0',
+          'Leaderboard: Syed → Abin → Debbie',
+          'Cash reward "$20 cash": rejected',
+          'Agreed after 2 of 3: no · after 3 of 3: yes · agreed events: 1',
+          'Points stored in records: no (derived)',
+        ],
+        actual: [
+          `Points: Syed ${pts.syed}, Abin ${pts.abin}, Debbie ${pts.debbie}`,
+          `Streaks (weeks): Syed ${streaks[0]}, Abin ${streaks[1]}, Debbie ${streaks[2]}`,
+          `Leaderboard: ${order.join(' → ')}`,
+          `Cash reward "$20 cash": ${cash.reward === null ? 'rejected' : 'accepted'}`,
+          `Agreed after 2 of 3: ${partial ? 'yes' : 'no'} · after 3 of 3: ${isRewardAgreed(r.reward) ? 'yes' : 'no'} · agreed events: ${agreedEvents}`,
+          `Points stored in records: ${stored ? 'yes' : 'no (derived)'}`,
+        ],
+        pass:
+          pts.syed === 20 &&
+          pts.abin === 8 &&
+          pts.debbie === 0 &&
+          streaks.join() === '2,0,0' &&
+          order.join() === 'Syed,Abin,Debbie' &&
+          cash.reward === null &&
+          !partial &&
+          isRewardAgreed(r.reward) &&
+          agreedEvents === 1 &&
+          !stored,
+      };
+    },
+  );
+}
+
 export const CHECK_DEFINITIONS: (() => CheckResult)[] = [
   scenarioA,
   scenarioB,
@@ -453,6 +516,7 @@ export const CHECK_DEFINITIONS: (() => CheckResult)[] = [
   checkInputValidation,
   checkDoubleSubmit,
   checkZeroSumStress,
+  checkGamification,
 ];
 
 export interface ValidationReport {
