@@ -1,0 +1,135 @@
+Room Sync PoC – validation results
+Generated: 2026-11-10T00:14:01.787Z
+Environment: Room Sync local interactive PoC – checks run in isolated in-memory state
+Result: 12/12 checks passed
+
+[PASS] A – Equal expense split (FR-03, FR-04, NFR-05)
+  Setup: Zero balances. Syed pays $60.00, split equally among all three members.
+  Expected: Balances: Syed +$40.00, Abin −$20.00, Debbie −$20.00
+  Actual:   Balances: Syed +$40.00, Abin −$20.00, Debbie −$20.00
+  Expected: Household total: $0.00
+  Actual:   Household total: $0.00
+  Expected: Expenses recorded: 1
+  Actual:   Expenses recorded: 1
+
+[PASS] B – Remainder cents (FR-03, NFR-05)
+  Setup: Zero balances. Syed pays $10.00, split equally. Remainder follows Syed → Abin → Debbie.
+  Expected: Shares: $3.34, $3.33, $3.33
+  Actual:   Shares: $3.34, $3.33, $3.33
+  Expected: Balances: Syed +$6.66, Abin −$3.33, Debbie −$3.33
+  Actual:   Balances: Syed +$6.66, Abin −$3.33, Debbie −$3.33
+  Expected: Household total: $0.00
+  Actual:   Household total: $0.00
+  Expected: Share sum: $10.00
+  Actual:   Share sum: $10.00
+
+[PASS] C – Custom split (FR-03, FR-04, NFR-05)
+  Setup: Zero balances. Debbie pays $49.00. Shares: Syed $20.00, Abin $14.50, Debbie $14.50.
+  Expected: Balances: Syed −$20.00, Abin −$14.50, Debbie +$34.50
+  Actual:   Balances: Syed −$20.00, Abin −$14.50, Debbie +$34.50
+  Expected: Household total: $0.00
+  Actual:   Household total: $0.00
+
+[PASS] D – External settle-up (FR-05, FR-04, NFR-05)
+  Setup: Start from Scenario A. Abin records paying Syed $20.00 outside the app.
+  Expected: Balances: Syed +$20.00, Abin $0.00, Debbie −$20.00
+  Actual:   Balances: Syed +$20.00, Abin $0.00, Debbie −$20.00
+  Expected: Household total: $0.00
+  Actual:   Household total: $0.00
+  Expected: Settle-ups recorded: 1
+  Actual:   Settle-ups recorded: 1
+  Expected: Paying $20.01 against $20.00 owed: blocked
+  Actual:   Paying $20.01 against $20.00 owed: blocked (exceedsOutstanding)
+
+[PASS] E – Invalid custom split is blocked (FR-03, NFR-05)
+  Setup: A $30.00 expense with custom shares totalling $29.99 ($10.00 + $10.00 + $9.99).
+  Expected: Save blocked: yes
+  Actual:   Save blocked: yes
+  Expected: Feedback: $0.01 still to allocate
+  Actual:   Feedback: $0.01 still to allocate. Shares must add up to $30.00.
+  Expected: New expenses / activity / balance changes: none
+  Actual:   New expenses / activity / balance changes: none
+
+[PASS] F – Weekly chore rotation (FR-06, FR-07, FR-08)
+  Setup: A weekly chore starts with Syed in week 1. It is completed, then the demo week advances three times.
+  Expected: Weeks 1–4: Syed → Abin → Debbie → Syed
+  Actual:   Weeks 1–4: Syed → Abin → Debbie → Syed
+  Expected: Week 1 completion kept: done
+  Actual:   Week 1 completion kept: done
+  Expected: Duplicate assignments: 0
+  Actual:   Duplicate assignments: 0
+  Expected: Current week: 4
+  Actual:   Current week: 4
+
+[PASS] G – Local persistence across reload (NFR-01, NFR-05, FR-08)
+  Setup: Clean scenario in an isolated in-memory store: add an expense, complete a chore, switch to French, save, then reload from storage.
+  Expected: Reload status: ok
+  Actual:   Reload status: ok
+  Expected: Expense present after reload: yes
+  Actual:   Expense present after reload: yes
+  Expected: Balances after reload: Syed −$15.00, Abin +$30.00, Debbie −$15.00 (total $0.00)
+  Actual:   Balances after reload: Syed −$15.00, Abin +$30.00, Debbie −$15.00 (total $0.00)
+  Expected: Chore completion after reload: done
+  Actual:   Chore completion after reload: done
+  Expected: Language after reload: fr
+  Actual:   Language after reload: fr
+  Expected: Malformed saved data: detected, demo restored
+  Actual:   Malformed saved data: detected, demo restored
+
+[PASS] H – Switching active roommate preserves totals (FR-04, NFR-05)
+  Setup: Populated demo. Switch the active roommate Syed → Abin → Debbie and compare derived balances.
+  Expected: Household balances unchanged: Syed +$61.19, Abin −$8.49, Debbie −$52.70
+  Actual:   Household balances unchanged: Syed +$61.19, Abin −$8.49, Debbie −$52.70
+  Expected: Household total: $0.00 for every perspective
+  Actual:   Household total: $0.00 for every perspective
+  Actual:   Syed sees own balance +$61.19
+  Actual:   Abin sees own balance −$8.49
+  Actual:   Debbie sees own balance −$52.70
+
+[PASS] I – Switching language preserves data (NFR-01, NFR-05)
+  Setup: Populated demo. Switch EN → FR → EN; compare records and integer-cent balances.
+  Expected: Household records identical: yes
+  Actual:   Household records identical: yes
+  Expected: Syed: $40.00 (EN) / 40,00 $ (FR) from the same 4000 cents
+  Actual:   Syed: $40.00 (EN) / 40,00 $ (FR) from the same 4000 cents; current balance +61,19 $
+  Expected: "12.50" and "12,50" → 1250 cents
+  Actual:   "12.50" and "12,50" → 1250 / 1250 cents
+
+[PASS] J – Expense input validation (FR-03)
+  Setup: Submit drafts with an empty description, invalid, zero, negative and over-precise amounts, a negative share and over-allocated shares.
+  Expected: empty description: blocked with specific error
+  Actual:   empty description: blocked {"title":"required"}
+  Expected: empty amount: blocked with specific error
+  Actual:   empty amount: blocked {"amount":"empty"}
+  Expected: amount "abc": blocked with specific error
+  Actual:   amount "abc": blocked {"amount":"invalid"}
+  Expected: amount 0: blocked with specific error
+  Actual:   amount 0: blocked {"amount":"zero"}
+  Expected: amount −5: blocked with specific error
+  Actual:   amount −5: blocked {"amount":"negative"}
+  Expected: amount 10.005: blocked with specific error
+  Actual:   amount 10.005: blocked {"amount":"tooManyDecimals"}
+  Expected: negative custom share: blocked with specific error
+  Actual:   negative custom share: blocked {"shares":{"syed":"negative"}}
+  Expected: shares exceed total: blocked with specific error
+  Actual:   shares exceed total: blocked {"allocation":{"kind":"over","diffCents":1}}
+
+[PASS] K – Repeated save creates one record (FR-03)
+  Setup: Dispatch the same add-expense action (same draft id) three times, as a rapid double/triple click would.
+  Expected: Expenses: 1
+  Actual:   Expenses: 1
+  Expected: Activity entries: 1
+  Actual:   Activity entries: 1
+  Expected: Household total: $0.00
+  Actual:   Household total: $0.00
+
+[PASS] L – Zero-sum invariant under 500 random records (NFR-05, FR-04, FR-05)
+  Setup: Seed 20261109: 400 random equal/custom expenses and up to 100 valid settle-ups, checking the invariant after every step.
+  Expected: Expenses accepted: 400
+  Actual:   Expenses accepted: 400 (settle-ups: 100)
+  Expected: Zero-sum violations: 0
+  Actual:   Zero-sum violations: 0
+  Expected: Non-integer balances: 0
+  Actual:   Non-integer balances: 0
+  Expected: Suggested transfers clear all balances: yes
+  Actual:   Suggested transfers clear all balances: yes (2 transfers)
